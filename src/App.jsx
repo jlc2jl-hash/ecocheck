@@ -1474,3 +1474,14 @@ function TutorialDetalhe({ goto }) {
     </div>
   );
 }
+export default function App() {
+  const [view, setView] = useState("landing");
+
+  return (
+    <div className="ec-root" style={{ background: C.paper, minHeight: "100vh" }}>
+      <style>{FONTS}</style>
+      {view === "landing" && <Landing goto={(v) => setView(v)} />}
+      {view === "onboarding" && <Onboarding goto={(v) => setView(v)} />}
+    </div>
+  );
+}
