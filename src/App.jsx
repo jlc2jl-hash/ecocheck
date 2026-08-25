@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   Leaf, ArrowRight, ShieldCheck, FileText, Recycle, Clock,
   Sparkles, AlertTriangle, Loader2, Check, QrCode, Copy, CheckCircle,
-  FileAlert, CheckSquare, RefreshCw
+  AlertCircle, CheckSquare, RefreshCw
 } from "lucide-react";
 
 /* ============================== SUPABASE ============================== */
@@ -80,7 +80,6 @@ export default function App() {
 
   const handleChange = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
-  // MOTOR DE DIAGNÓSTICO INTELIGENTE
   const processarDiagnostico = () => {
     let nivelRisco = "Médio";
     let alertas = [];
@@ -358,7 +357,7 @@ export default function App() {
                   <div style={{ display: "grid", gap: 8 }}>
                     {diagnostico.alertas.map((alerta, i) => (
                       <div key={i} style={{ background: C.paperDim, padding: "10px 14px", borderRadius: 8, fontSize: 13.5, color: C.ink, display: "flex", alignItems: "center", gap: 8 }}>
-                        <FileAlert size={16} color={C.orange} /> {alerta}
+                        <AlertCircle size={16} color={C.orange} /> {alerta}
                       </div>
                     ))}
                   </div>
