@@ -1679,19 +1679,71 @@ function AssistenteView() {
 export default function EcoCheckApp() {
   const [view, setView] = useState("landing");
   const [subView, setSubView] = useState(null);
+  const [authMode, setAuthMode] = useState("login");
+  const [currentUser, setCurrentUser] = useState(null);
 
   const goto = (v, sub = null) => {
+    if (v === "auth") {
+      setAuthMode(sub || "login");
+    }
+
+    if (v === "dashboard") {
+      v = "app";
+      sub = "dashboard";
+    }
+
     setView(v);
     setSubView(sub);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleAuthed = (user) => {
+    setCurrentUser(user);
+    setView("app");
+    setSubView("dashboard");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setView("landing");
+    setSubView(null);
+  };
+
   return (
     <div className="ec-root">
       <style>{FONTS}</style>
-      {view === "landing" && <Landing goto={goto} />}
-      {view === "onboarding" && <Onboarding goto={goto} />}
-      {(view === "resultado" || view === "app") && <AppDashboard view={subView || "dashboard"} setView={setSubView} goto={goto} />}
+
+      {view === "landing" && (
+        <Landing goto={goto} />
+      )}
+
+      {view === "onboarding" && (
+        <Onboarding goto={goto} />
+      )}
+
+      {view === "resultado" && (
+        <Resultado goto={goto} />
+      )}
+
+      {view === "auth" && (
+        <AuthPage
+          mode={authMode}
+          setMode={setAuthMode}
+          goto={goto}
+          onAuthed={handleAuthed}
+        />
+      )}
+
+      {view === "app" && (
+        <AppDashboard
+          view={subView || "dashboard"}
+          setView={setSubView}
+          goto={goto}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        />
+      )}
     </div>
   );
 }
