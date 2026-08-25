@@ -1,28 +1,39 @@
+// Arquivo: api/gerar-diagnostico.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY; // ou GEMINI_API_KEY
+  const apiKey = process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'Chave de API da IA não configurada na Vercel.' });
+    return res.status(500).json({ error: 'Chave de API não configurada na Vercel.' });
   }
 
-  const { cnpj, razaoSocial, atividade, geracaoResiduos, temLicenca } = req.body;
+  const dadosFormulario = req.body;
 
-  const prompt = `Você é um engenheiro ambiental especialista em compliance e licenciamento.
-  Analise a seguinte empresa e gere um diagnóstico técnico resumido:
-  - Razão Social: ${razaoSocial}
-  - Atividade: ${atividade}
-  - Gera Resíduos/Efluentes: ${geracaoResiduos}
-  - Licença Atual: ${temLicenca}
+  const prompt = `Você é um engenheiro ambiental especialista em compliance para PMEs no Brasil.
+  Analise os dados desta empresa e gere um diagnóstico técnico resumido:
+  
+  - Razão Social: ${dadosFormulario.razaoSocial}
+  - Atividade: ${dadosFormulario.atividade}
+  - Estado/Município: ${dadosFormulario.estado} / ${dadosFormulario.municipio}
+  - Porte: ${dadosFormulario.porte} (${dadosFormulario.area}, ${dadosFormulario.funcionarios} funcionários)
+  - Uso de Água: ${dadosFormulario.usaAgua} (Origem: ${dadosFormulario.origemAgua}, Outorga: ${dadosFormulario.outorga})
+  - Resíduos: ${dadosFormulario.geraResiduos} (Tipos: ${dadosFormulario.categoriasResiduos?.join(', ')})
+  - Licença Ambiental: ${dadosFormulario.licenca}
 
-  Responda estritamente em formato JSON com as seguintes chaves:
+  Responda EXCLUSIVAMENTE em formato JSON com a seguinte estrutura:
   {
-    "nivelRisco": "Baixo" | "Médio" | "Alto",
-    "alertas": ["alerta 1", "alerta 2"],
-    "pendencias": ["ação 1", "ação 2"]
+    "nivelRisco": "BAIXO" | "MODERADO" | "ALTO",
+    "pontosAtencao": 3,
+    "resumoCards": [
+      { "key": "licenciamento", "label": "Licenciamento", "value": "Texto descritivo", "tone": "blue" },
+      { "key": "residuos", "label": "Resíduos", "value": "Texto descritivo", "tone": "orange" }
+    ],
+    "pendencias": [
+      { "id": 1, "title": "Título da pendência", "area": "Licenciamento", "priority": "ALTA", "detail": "Explicação detalhada" }
+    ]
   }`;
 
   try {
