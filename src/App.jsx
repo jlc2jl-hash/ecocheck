@@ -1677,15 +1677,7 @@ export default function EcoCheckApp() {
       )}
     </div>
   );
-}
-// Validação simples para avançar de etapa no formulário
-  const canAdvance = useMemo(() => {
-    if (stage === 1) return a.cnpj && a.razaoSocial && a.atividade;
-    return true;
-  }, [stage, a]);
-
-  // Função chamada ao finalizar o formulário que dispara a IA
-  const submit = async () => {
+const submit = async () => {
     setLoading(true);
 
     try {
@@ -1698,10 +1690,10 @@ export default function EcoCheckApp() {
       const data = await response.json();
 
       if (data.success && data.diagnostico) {
-        // Guarda o diagnóstico retornado pela IA para exibir na tela final
+        // Armazena a resposta em tempo real da IA
         window.resultadoDiagnosticoIA = data.diagnostico;
       }
     } catch (err) {
-      console.error("Erro ao chamar IA, mantendo diagnóstico padrão:", err);
+      console.error("Falha ao comunicar com a IA:", err);
     }
   };
