@@ -1485,3 +1485,487 @@ export default function App() {
     </div>
   );
 }
+const canAdvance = useMemo(() => {
+    if (stage === 1) return a.cnpj && a.razaoSocial && a.atividade;
+    if (stage === 2) return a.usaAgua !== "";
+    if (stage === 3) return a.geraResiduos !== "";
+    if (stage === 4) return a.efluentes !== "";
+    if (stage === 5) return a.licenca !== "";
+    if (stage === 6) return a.quimicos !== "";
+    return true;
+  }, [stage, a]);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", background: C.paper, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <Card style={{ padding: 40, textAlign: "center", maxWidth: 440, width: "100%" }}>
+          <Loader2 size={40} color={C.green} className="ec-spin" style={{ margin: "0 auto 20px" }} />
+          <h3 className="ec-display" style={{ fontSize: 20, fontWeight: 700, color: C.forest, marginBottom: 8 }}>
+            Gerando seu Diagnóstico
+          </h3>
+          <p style={{ color: C.gray600, fontSize: 14.5, lineHeight: 1.5, minHeight: 44 }}>
+            {LOADING_MESSAGES[loadingStep]}
+          </p>
+          <div style={{ height: 6, background: C.paperDim, borderRadius: 999, overflow: "hidden", marginTop: 20 }}>
+            <div style={{ height: "100%", width: `${((loadingStep + 1) / 3) * 100}%`, background: C.green, transition: "width .5s ease" }} />
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: C.paper, display: "flex", flexDirection: "column" }}>
+      <div style={{ borderBottom: `1px solid ${C.line}`, background: C.white }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Leaf size={20} color={C.green} />
+            <span className="ec-display" style={{ fontWeight: 700, color: C.forest }}>EcoCheck</span>
+          </div>
+          <span className="ec-mono" style={{ fontSize: 13, color: C.gray600 }}>Etapa {stage} de {totalStages}</span>
+        </div>
+        <div style={{ height: 4, background: C.paperDim }}>
+          <div style={{ height: "100%", width: `${(stage / totalStages) * 100}%`, background: C.green, transition: "width .3s ease" }} />
+        </div>
+      </div>
+
+      <div style={{ flex: 1, maxWidth: 680, width: "100%", margin: "0 auto", padding: "40px 24px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <Card style={{ padding: 32 }} className="ec-fade">
+          {stage === 1 && (
+            <div>
+              <h2 className="ec-display" style={{ fontSize: 22, color: C.forest, marginBottom: 8 }}>Dados da Empresa</h2>
+              <p style={{ color: C.gray600, fontSize: 14, marginBottom: 20 }}>Confirme as informações básicas do seu empreendimento.</p>
+              <div style={{ display: "grid", gap: 14 }}>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: C.forest, display: "block", marginBottom: 4 }}>CNPJ</label>
+                  <input className="ec-input" value={a.cnpj} onChange={(e) => set("cnpj", e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: C.forest, display: "block", marginBottom: 4 }}>Razão Social</label>
+                  <input className="ec-input" value={a.razaoSocial} onChange={(e) => set("razaoSocial", e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: C.forest, display: "block", marginBottom: 4 }}>Atividade Principal</label>
+                  <input className="ec-input" value={a.atividade} onChange={(e) => set("atividade", e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {stage === 2 && (
+            <div>
+              <h2 className="ec-display" style={{ fontSize: 22, color: C.forest, marginBottom: 8 }}>Uso de Recursos Hídricos</h2>
+              <p style={{ color: C.gray600, fontSize: 14, marginBottom: 20 }}>Sua empresa capta ou utiliza água de forma direta?</p>
+              <div style={{ display: "grid", gap: 10 }}>
+                {["Sim, utilizamos poço artesiano / captação própria", "Sim, apenas rede pública (concessionária)", "Não utilizamos água no processo"].map((opt) => (
+                  <button key={opt} type="button" onClick={() => set("usaAgua", opt)} className="ec-btn" style={{ textAlign: "left", padding: 14, borderRadius: 10, border: `1.5px solid ${a.usaAgua === opt ? C.green : C.line}`, background: a.usaAgua === opt ? C.greenSoft : C.white, color: C.ink, fontWeight: 500 }}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {stage === 3 && (
+            <div>
+              <h2 className="ec-display" style={{ fontSize: 22, color: C.forest, marginBottom: 8 }}>Geração de Resíduos</h2>
+              <p style={{ color: C.gray600, fontSize: 14, marginBottom: 20 }}>Quais resíduos são gerados nas suas atividades?</p>
+              <div style={{ display: "grid", gap: 10 }}>
+                {["Entulho e resíduos de construção (RCC)", "Embalagens, plásticos e papelão", "Óleos, tintas ou produtos perigosos", "Apenas resíduos orgânicos / domésticos"].map((opt) => (
+                  <button key={opt} type="button" onClick={() => toggleArr("categoriasResiduos", opt)} className="ec-btn" style={{ textAlign: "left", padding: 14, borderRadius: 10, border: `1.5px solid ${a.categoriasResiduos.includes(opt) ? C.green : C.line}`, background: a.categoriasResiduos.includes(opt) ? C.greenSoft : C.white, color: C.ink, fontWeight: 500, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>{opt}</span>
+                    {a.categoriasResiduos.includes(opt) && <Check size={16} color={C.green} />}
+                  </button>
+                ))}
+              </div>
+              <div style={{ marginTop: 16 }}>
+                <Btn size="sm" variant="ghost" onClick={() => set("geraResiduos", "ok")}>Confirmar seleção</Btn>
+              </div>
+            </div>
+          )}
+
+          {stage === 4 && (
+            <div>
+              <h2 className="ec-display" style={{ fontSize: 22, color: C.forest, marginBottom: 8 }}>Efluentes Líquidos</h2>
+              <p style={{ color: C.gray600, fontSize: 14, marginBottom: 20 }}>Como é feito o descarte de efluentes sanitários ou industriais?</p>
+              <div style={{ display: "grid", gap: 10 }}>
+                {["Rede pública de esgoto", "Fossa séptica / filtro anaeróbio", "Estação de Tratamento própria (ETE)", "Lançamento em corpo hídrico / solo"].map((opt) => (
+                  <button key={opt} type="button" onClick={() => set("efluentes", opt)} className="ec-btn" style={{ textAlign: "left", padding: 14, borderRadius: 10, border: `1.5px solid ${a.efluentes === opt ? C.green : C.line}`, background: a.efluentes === opt ? C.greenSoft : C.white, color: C.ink, fontWeight: 500 }}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {stage === 5 && (
+            <div>
+              <h2 className="ec-display" style={{ fontSize: 22, color: C.forest, marginBottom: 8 }}>Licenciamento Ambiental</h2>
+              <p style={{ color: C.gray600, fontSize: 14, marginBottom: 20 }}>A empresa possui licença ambiental ativa?</p>
+              <div style={{ display: "grid", gap: 10 }}>
+                {["Possui licença válida", "Possui licença, mas está vencida", "Dispensa ou Não aplicável", "Não sei informar"].map((opt) => (
+                  <button key={opt} type="button" onClick={() => set("licenca", opt)} className="ec-btn" style={{ textAlign: "left", padding: 14, borderRadius: 10, border: `1.5px solid ${a.licenca === opt ? C.green : C.line}`, background: a.licenca === opt ? C.greenSoft : C.white, color: C.ink, fontWeight: 500 }}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {stage === 6 && (
+            <div>
+              <h2 className="ec-display" style={{ fontSize: 22, color: C.forest, marginBottom: 8 }}>Produtos Químicos e Emissões</h2>
+              <p style={{ color: C.gray600, fontSize: 14, marginBottom: 20 }}>Há armazenamento de quimicos ou geração de ruído/gases?</p>
+              <div style={{ display: "grid", gap: 10 }}>
+                {["Armazena combustíveis ou solventes", "Possui gerador a diesel", "Emite ruído acentuado no processo", "Nenhuma das opções anteriores"].map((opt) => (
+                  <button key={opt} type="button" onClick={() => set("quimicos", opt)} className="ec-btn" style={{ textAlign: "left", padding: 14, borderRadius: 10, border: `1.5px solid ${a.quimicos === opt ? C.green : C.line}`, background: a.quimicos === opt ? C.greenSoft : C.white, color: C.ink, fontWeight: 500 }}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {stage === 7 && (
+            <div>
+              <h2 className="ec-display" style={{ fontSize: 22, color: C.forest, marginBottom: 8 }}>Revisão Final</h2>
+              <p style={{ color: C.gray600, fontSize: 14, marginBottom: 20 }}>Tudo pronto para processar o diagnóstico com base nas respostas fornecidas.</p>
+              <div style={{ padding: 16, background: C.paperDim, borderRadius: 10, fontSize: 14, color: C.gray600, display: "grid", gap: 8 }}>
+                <div><strong>Empresa:</strong> {a.razaoSocial}</div>
+                <div><strong>Atividade:</strong> {a.atividade}</div>
+                <div><strong>Recursos Hídricos:</strong> {a.usaAgua || "Não informado"}</div>
+                <div><strong>Licenciamento:</strong> {a.licenca || "Não informado"}</div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 28, borderTop: `1px solid ${C.line}`, paddingTop: 20 }}>
+            <Btn variant="ghost" onClick={back} icon={ArrowLeft}>Voltar</Btn>
+            <Btn variant="primary" onClick={next} disabled={!canAdvance} icon={stage === totalStages ? Check : ArrowRight}>
+              {stage === totalStages ? "Concluir Diagnóstico" : "Avançar"}
+            </Btn>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+/* ============================== DASHBOARD & APP INTERFACE ============================== */
+function AppDashboard({ view, setView, goto }) {
+  const [activeTab, setActiveTab] = useState(view || "dashboard");
+
+  useEffect(() => {
+    if (view) setActiveTab(view);
+  }, [view]);
+
+  return (
+    <div className="ec-root" style={{ display: "flex", minHeight: "100vh", background: C.paper }}>
+      {/* SIDEBAR */}
+      <aside className="ec-hide-mobile" style={{ width: 250, borderRight: `1px solid ${C.line}`, background: C.white, padding: "24px 16px", display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 12px 24px", borderBottom: `1px solid ${C.line}` }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: C.forest, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Leaf size={18} color={C.greenBright} />
+          </div>
+          <span className="ec-display" style={{ fontWeight: 700, fontSize: 18, color: C.forest }}>EcoCheck</span>
+        </div>
+
+        <nav style={{ marginTop: 20, flex: 1, display: "grid", gap: 4 }}>
+          {SIDEBAR.map((item) => {
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className="ec-sidebar-item"
+                style={{
+                  display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 10,
+                  border: "none", background: active ? C.greenSoft : "transparent",
+                  color: active ? C.green : C.gray600, fontWeight: active ? 600 : 500, fontSize: 14, cursor: "pointer", textAlign: "left"
+                }}
+              >
+                <item.icon size={18} color={active ? C.green : C.gray600} />
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div style={{ borderTop: `1px solid ${C.line}`, paddingTop: 16, marginTop: 16 }}>
+          <button onClick={() => goto("landing")} style={{ display: "flex", alignItems: "center", gap: 10, border: "none", background: "transparent", color: C.gray600, fontSize: 13.5, cursor: "pointer", width: "100%", padding: 8 }}>
+            <LogOut size={16} /> Sair do painel
+          </button>
+        </div>
+      </aside>
+
+      {/* CONTENT AREA */}
+      <main className="ec-scroll" style={{ flex: 1, overflowY: "auto", padding: "32px 36px 80px" }}>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
+          <div>
+            <h1 className="ec-display" style={{ fontSize: 24, fontWeight: 700, color: C.forest, margin: 0 }}>
+              {SIDEBAR.find((s) => s.id === activeTab)?.label || "Visão Geral"}
+            </h1>
+            <p style={{ color: C.gray600, fontSize: 13.5, marginTop: 4 }}>
+              {COMPANY.nomeFantasia} — CNPJ {COMPANY.cnpj}
+            </p>
+          </div>
+          <Btn size="sm" variant="secondary" icon={Sparkles} onClick={() => goto("onboarding")}>Novo Diagnóstico</Btn>
+        </header>
+
+        {activeTab === "dashboard" && <DashboardView setActiveTab={setActiveTab} />}
+        {activeTab === "pendencias" && <PendenciasView />}
+        {activeTab === "documentos" && <DocumentosView />}
+        {activeTab === "calendario" && <CalendarioView />}
+        {activeTab === "tutoriais" && <TutoriaisView />}
+        {activeTab === "assistente" && <AssistenteView />}
+        {!["dashboard", "pendencias", "documentos", "calendario", "tutoriais", "assistente"].includes(activeTab) && (
+          <Card style={{ padding: 40, textAlign: "center" }}>
+            <FolderOpen size={36} color={C.gray400} style={{ margin: "0 auto 12px" }} />
+            <h3 className="ec-display" style={{ fontSize: 18, color: C.forest }}>Módulo em desenvolvimento</h3>
+            <p style={{ color: C.gray600, fontSize: 14 }}>Esta área estará disponível na próxima versão do protótipo.</p>
+          </Card>
+        )}
+      </main>
+
+      {/* MOBILE BOTTOM NAV */}
+      <div className="ec-show-mobile-flex" style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: C.white, borderTop: `1px solid ${C.line}`, padding: "8px 16px", justifyContent: "space-around", zIndex: 40 }}>
+        {MOBILE_TABS.map((tab) => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ border: "none", background: "transparent", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: activeTab === tab.id ? C.green : C.gray400, fontSize: 11, fontWeight: 600 }}>
+            <tab.icon size={18} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <style>{`
+        .ec-show-mobile-flex { display: none; }
+        @media (max-width: 860px) {
+          .ec-show-mobile-flex { display: flex !important; }
+          main { padding: 20px 16px 80px !important; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ============================== DASHBOARD VIEWS ============================== */
+function DashboardView({ setActiveTab }) {
+  return (
+    <div style={{ display: "grid", gap: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 20 }}>
+        <Card style={{ padding: 24, display: "flex", alignItems: "center" }}>
+          <LevelBadge />
+        </Card>
+        <Card style={{ padding: 24 }}>
+          <h3 className="ec-display" style={{ fontSize: 16, fontWeight: 700, color: C.forest, marginBottom: 16 }}>Resumo do Diagnóstico</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12 }}>
+            {RESUMO_CARDS.map((c) => (
+              <div key={c.key} onClick={() => setActiveTab("pendencias")} style={{ padding: 12, borderRadius: 10, background: C.paperDim, cursor: "pointer" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <c.icon size={15} color={C[c.tone === "orange" ? "orange" : "blue"]} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.forest }}>{c.label}</span>
+                </div>
+                <div style={{ fontSize: 12, color: C.gray600 }}>{c.value}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      <Card style={{ padding: 24 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h3 className="ec-display" style={{ fontSize: 16, fontWeight: 700, color: C.forest, margin: 0 }}>Pendências Prioritárias</h3>
+          <Btn size="sm" variant="ghost" icon={ChevronRight} onClick={() => setActiveTab("pendencias")}>Ver todas</Btn>
+        </div>
+        <div style={{ display: "grid", gap: 12 }}>
+          {PENDENCIAS.map((p) => (
+            <div key={p.id} style={{ padding: 16, borderRadius: 12, border: `1px solid ${C.line}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <PriorityPill p={p.priority} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: C.forest }}>{p.title}</span>
+                </div>
+                <p style={{ fontSize: 13, color: C.gray600, margin: 0 }}>{p.detail}</p>
+              </div>
+              <Btn size="sm" variant="secondary" onClick={() => setActiveTab("tutoriais")}>Resolver</Btn>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function PendenciasView() {
+  return (
+    <div style={{ display: "grid", gap: 16 }}>
+      {PENDENCIAS.map((p) => (
+        <Card key={p.id} style={{ padding: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <PriorityPill p={p.priority} />
+            <span className="ec-mono" style={{ fontSize: 12, color: C.gray400 }}>{p.area}</span>
+          </div>
+          <h4 className="ec-display" style={{ fontSize: 16, color: C.forest, margin: "4px 0 8px" }}>{p.title}</h4>
+          <p style={{ fontSize: 14, color: C.gray600, lineHeight: 1.5, margin: 0 }}>{p.detail}</p>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function DocumentosView() {
+  const [filter, setFilter] = useState("Todos");
+  const filtered = filter === "Todos" ? DOCUMENTOS : DOCUMENTOS.filter((d) => d.categoria === filter);
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 12, marginBottom: 16 }}>
+        {DOC_CATEGORIES.map((cat) => (
+          <button key={cat} onClick={() => setFilter(cat)} className="ec-chip" style={{ padding: "6px 14px", borderRadius: 999, border: `1px solid ${filter === cat ? C.green : C.line}`, background: filter === cat ? C.greenSoft : C.white, color: filter === cat ? C.green : C.gray600, fontSize: 13, fontWeight: 500, whiteSpace: "nowrap" }}>
+            {cat}
+          </button>
+        ))}
+      </div>
+      <Card style={{ padding: 0, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: 14 }}>
+          <thead>
+            <tr style={{ background: C.paperDim, borderBottom: `1px solid ${C.line}`, color: C.gray600, fontSize: 12.5 }}>
+              <th style={{ padding: "12px 16px" }}>Nome do Documento</th>
+              <th style={{ padding: "12px 16px" }}>Categoria</th>
+              <th style={{ padding: "12px 16px" }}>Status</th>
+              <th style={{ padding: "12px 16px" }}>Validade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((doc, i) => (
+              <tr key={i} style={{ borderBottom: `1px solid ${C.line}` }}>
+                <td style={{ padding: "14px 16px", fontWeight: 600, color: C.forest }}>{doc.name}</td>
+                <td style={{ padding: "14px 16px", color: C.gray600 }}>{doc.categoria}</td>
+                <td style={{ padding: "14px 16px" }}><Pill tone={statusTone(doc.status)}>{doc.status}</Pill></td>
+                <td style={{ padding: "14px 16px", color: C.gray600 }} className="ec-mono">{doc.validade}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
+
+function CalendarioView() {
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      {PRAZOS.map((p, i) => (
+        <Card key={i} style={{ padding: 18, display: "flex", alignItems: "center", gap: 20 }}>
+          <div style={{ width: 54, height: 54, borderRadius: 12, background: C.paperDim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: `1px solid ${C.line}` }}>
+            <span className="ec-display" style={{ fontSize: 18, fontWeight: 800, color: C.forest, lineHeight: 1 }}>{p.date}</span>
+            <span className="ec-mono" style={{ fontSize: 10, fontWeight: 700, color: C.gray600, textTransform: "uppercase", marginTop: 2 }}>{p.month}</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+              <h4 className="ec-display" style={{ fontSize: 15, color: C.forest, margin: 0 }}>{p.title}</h4>
+              <Pill tone={CAL_TONE[p.status]}>{p.status}</Pill>
+            </div>
+            <p style={{ fontSize: 13, color: C.gray600, margin: 0 }}>{p.desc}</p>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function TutoriaisView() {
+  const [activeTut, setActiveTut] = useState(null);
+
+  if (activeTut) {
+    return (
+      <div>
+        <Btn size="sm" variant="ghost" icon={ArrowLeft} onClick={() => setActiveTut(null)} style={{ marginBottom: 16 }}>Voltar para lista</Btn>
+        <Card style={{ padding: 28 }}>
+          <h2 className="ec-display" style={{ fontSize: 20, color: C.forest, marginBottom: 20 }}>Guia do PGRS</h2>
+          <div style={{ display: "grid", gap: 16 }}>
+            {PGRS_STEPS.map((s, idx) => (
+              <div key={idx} style={{ padding: 16, background: C.paperDim, borderRadius: 10 }}>
+                <h4 className="ec-display" style={{ fontSize: 14.5, color: C.forest, marginBottom: 6 }}>{idx + 1}. {s.title}</h4>
+                <p style={{ fontSize: 13.5, color: C.gray600, margin: 0, lineHeight: 1.5 }}>{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }}>
+      {TUTORIAIS.map((t) => (
+        <Card key={t.id} style={{ padding: 20, cursor: "pointer" }} onClick={() => setActiveTut(t.id)}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: C.greenSoft, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <t.icon size={18} color={C.green} />
+            </div>
+            <div>
+              <span className="ec-mono" style={{ fontSize: 11, color: C.gray400 }}>{t.categoria}</span>
+              <div style={{ fontSize: 12, color: C.gray600 }}>{t.tempo} de leitura</div>
+            </div>
+          </div>
+          <h4 className="ec-display" style={{ fontSize: 15, color: C.forest, margin: 0 }}>{t.titulo}</h4>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function AssistenteView() {
+  const [messages, setMessages] = useState([
+    { sender: "bot", text: "Olá! Sou seu assistente de compliance ambiental. Como posso ajudar a Barbosa Construções hoje?" }
+  ]);
+  const [input, setInput] = useState("");
+
+  const send = () => {
+    if (!input.trim()) return;
+    const userMsg = input;
+    setMessages((p) => [...p, { sender: "user", text: userMsg }]);
+    setInput("");
+    setTimeout(() => {
+      setMessages((p) => [...p, { sender: "bot", text: "Entendi sua dúvida sobre " + userMsg + ". Com base no seu cadastro de obras, a orientação recomendada é verificar o enquadramento na prefeitura local." }]);
+    }, 800);
+  };
+
+  return (
+    <Card style={{ height: 500, display: "flex", flexDirection: "column", padding: 0 }}>
+      <div style={{ flex: 1, padding: 20, overflowY: "auto", display: "grid", gap: 12 }} className="ec-scroll">
+        {messages.map((m, i) => (
+          <div key={i} style={{ alignSelf: m.sender === "user" ? "flex-end" : "flex-start", maxWidth: "80%", background: m.sender === "user" ? C.forest : C.paperDim, color: m.sender === "user" ? C.white : C.ink, padding: "10px 14px", borderRadius: 12, fontSize: 14 }}>
+            {m.text}
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: 14, borderTop: `1px solid ${C.line}`, display: "flex", gap: 10 }}>
+        <input className="ec-input" placeholder="Digite sua dúvida sobre legislação ou licenças..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} />
+        <Btn variant="primary" icon={Send} onClick={send} />
+      </div>
+    </Card>
+  );
+}
+
+/* ============================== MAIN CONTAINER ============================== */
+export default function EcoCheckApp() {
+  const [view, setView] = useState("landing");
+  const [subView, setSubView] = useState(null);
+
+  const goto = (v, sub = null) => {
+    setView(v);
+    setSubView(sub);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <div className="ec-root">
+      <style>{FONTS}</style>
+      {view === "landing" && <Landing goto={goto} />}
+      {view === "onboarding" && <Onboarding goto={goto} />}
+      {(view === "resultado" || view === "app") && <AppDashboard view={subView || "dashboard"} setView={setSubView} goto={goto} />}
+    </div>
+  );
+}
