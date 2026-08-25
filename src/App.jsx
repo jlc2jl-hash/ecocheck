@@ -1651,6 +1651,31 @@ const canAdvance = useMemo(() => {
   );
 }
 
+{stage === 7 && (
+            <div>
+              <h2 className="ec-display" style={{ fontSize: 22, color: C.forest, marginBottom: 8 }}>Revisão Final</h2>
+              <p style={{ color: C.gray600, fontSize: 14, marginBottom: 20 }}>Tudo pronto para processar o diagnóstico com base nas respostas fornecidas.</p>
+              <div style={{ padding: 16, background: C.paperDim, borderRadius: 10, fontSize: 14, color: C.gray600, display: "grid", gap: 8 }}>
+                <div><strong>Empresa:</strong> {a.razaoSocial}</div>
+                <div><strong>Atividade:</strong> {a.atividade}</div>
+                <div><strong>Recursos Hídricos:</strong> {a.usaAgua || "Não informado"}</div>
+                <div><strong>Licenciamento:</strong> {a.licenca || "Não informado"}</div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 28, borderTop: `1px solid ${C.line}`, paddingTop: 20 }}>
+            <Btn variant="ghost" onClick={back} icon={ArrowLeft}>Voltar</Btn>
+            <Btn variant="primary" onClick={next} disabled={!canAdvance} icon={stage === totalStages ? Check : ArrowRight}>
+              {stage === totalStages ? "Concluir Diagnóstico" : "Avançar"}
+            </Btn>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 /* ============================== DASHBOARD & APP INTERFACE ============================== */
 function AppDashboard({ view, setView, goto }) {
   const [activeTab, setActiveTab] = useState(view || "dashboard");
